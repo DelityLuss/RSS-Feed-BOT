@@ -9,6 +9,9 @@ const getCalendar = require("./src/getCalendar");
 // RSS file path
 const RSS_FILE_PATH = "RSS/";
 
+const PORT = process.env.PORT || 3000;
+const TRACK_CLIENT = false;
+
 // Ressources
 RESSOURCE = {
     "B1G1": 49465,
@@ -17,6 +20,7 @@ RESSOURCE = {
     "B1G4": 50295,
     "B2G1": 49470,
     "B2G2": 49515,
+    "B2GA": 49262,
     "all": "all"
 }
 
@@ -59,73 +63,79 @@ function trackClient(req, page) {
                 if (err) {
                     console.log(err);
                 }
-
             }
             );
         }
     }
     );
+    return json;
 }
+
+function logDate() {
+    const date = new Date();
+    const log = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
+    return log;
+}
+
+
 
 // Get the home page
 app.get('/', (req, res) => {
-    trackClient(req, "home");
-    res.send('Hello World!');
+    let info = TRACK_CLIENT ? trackClient(req, "refresh") : null;
+    // display the home page with the info
+    res.send('Hello World! <br> <br> <br> <br> <p>Information :</p>' + JSON.stringify(info));
+    res.status(200).end();
 }
 );
 
 // refresh the calendar
 app.get('/refresh', async (req, res) => {
-    trackClient(req, "refresh");
+    TRACK_CLIENT ? trackClient(req, "refresh") : null;
     ressource = req.query.ressource;
 
-    if (ressource == undefined) {
+    const log = logDate()
+
+    if (ressource == undefined || ressource == "" && !(ressource in RESSOURCE)) {
         return res.send("Error: ressource not found");
     }
-
-    if (!(ressource in RESSOURCE)) {
-        return res.send("Error: ressource not found");
-    }
-
-    date = new Date();
 
     firstDay = "2022-09-05"
     lastDay = "2023-06-16"
 
-    console.info("[+] Refreshing calendar from " + firstDay + " to " + lastDay);
+    console.info(`[${log}][+] Refreshing calendar from ` + firstDay + " to " + lastDay);
 
     await getCalendar(ressource, firstDay, lastDay);
 
     res.send('Calendar refreshed! for ' + ressource + ' from ' + firstDay + ' to ' + lastDay);
+    res.status(200).end();
 }
 );
 
-
-// Create RSS Feed from calendar
 app.get('/rss', async (req, res) => {
-    trackClient(req, "rss");
+    TRACK_CLIENT ? trackClient(req, "refresh") : null;
+    const log = logDate()
 
-    console.info("[+] Creating RSS feed");
+    console.info(`[${log}][+] Creating RSS feed for ${req.query.ressource}`);
 
     ressource = req.query.ressource;
 
-    if (ressource == undefined) {
+    if (ressource == undefined || ressource == "" && !(ressource in RESSOURCE)) {
         return res.send("Error: ressource not found");
+
     }
 
-    if (!(ressource in RESSOURCE)) {
-        return res.send("Error: ressource not found");
-    }
-    
     res.download(`${RSS_FILE_PATH}${ressource}.ics`);
 
-    console.info("[+] RSS feed downloaded");
+    console.info(`[${log}][+] RSS feed downloaded for ${req.query.ressource}`);
+
+    res.status(200);
 }
 );
 
 
 // Start the server
-app.listen(3000, () => {
-    console.info('Server started on port 3000');
+app.listen(PORT, () => {
+    const log = logDate()
+    console.info(`[${log}] Server started on port ` + PORT + '!');
 }
 );
