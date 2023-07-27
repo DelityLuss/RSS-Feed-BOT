@@ -8,7 +8,6 @@ const getCalendar = require("./src/getCalendar");
 
 // RSS file path
 const RSS_FILE_PATH = "RSS/";
-
 const PORT = process.env.PORT || 3000;
 const TRACK_CLIENT = false;
 
@@ -139,3 +138,5 @@ app.listen(PORT, () => {
     console.info(`[${log}] Server started on port ` + PORT + '!');
 }
 );
+
+// License (ISC)
