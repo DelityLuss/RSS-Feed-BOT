@@ -9,7 +9,7 @@ const getCalendar = require("./src/getCalendar");
 // RSS file path
 const RSS_FILE_PATH = "RSS/";
 const PORT = process.env.PORT || 3000;
-const TRACK_CLIENT = false;
+const TRACK_CLIENT = true;
 
 // Ressources
 RESSOURCE = {
@@ -83,7 +83,7 @@ app.get('/', (req, res) => {
     let info = TRACK_CLIENT ? trackClient(req, "refresh") : null;
     // display the home page with the info
     res.send('Hello World! <br> <br> <br> <br> <p>Information :</p>' + JSON.stringify(info));
-    res.status(200).end();
+    res.status(200);
 }
 );
 
@@ -106,17 +106,18 @@ app.get('/refresh', async (req, res) => {
     await getCalendar(ressource, firstDay, lastDay);
 
     res.send('Calendar refreshed! for ' + ressource + ' from ' + firstDay + ' to ' + lastDay);
-    res.status(200).end();
+    res.status(200);
 }
 );
 
 app.get('/rss', async (req, res) => {
-    TRACK_CLIENT ? trackClient(req, "refresh") : null;
+    let info = TRACK_CLIENT ? trackClient(req, "refresh") : null;
     const log = logDate()
 
-    console.info(`[${log}][+] Creating RSS feed for ${req.query.ressource}`);
+    console.info(`[${log}][+] Creating RSS feed for ${req.query.ressource} || ip : ${info.ip}`);
 
     ressource = req.query.ressource;
+    ressource = ressource.toUpperCase();
 
     if (ressource == undefined || ressource == "" && !(ressource in RESSOURCE)) {
         return res.send("Error: ressource not found");
