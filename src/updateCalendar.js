@@ -30,9 +30,6 @@ function remove_old_event(new_ics, old_ics) {
             line_old += "END:VCALENDAR\n";
         }
         else if (is_cancel) {
-            line_old += "";
-        }
-        else {
             line_old += l + "\n";
         }
     });
@@ -110,6 +107,7 @@ function remove_old_event(new_ics, old_ics) {
 
             // write the new file
             file.on('close', () => {
+                line += line_old;
                 fs.writeFile(new_ics, line, (err) => {
                     if (err) {
                         console.log(`[${chalk.red("ERROR")}][${logDate()}][!] Error while writing file ${err}`);
