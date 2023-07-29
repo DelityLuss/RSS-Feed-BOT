@@ -5,7 +5,8 @@ const chalk = require('chalk');
 
 function logDate() {
     const date = new Date();
-    const log = chalk.cyan(date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear());
+    const log = chalk.cyan(date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear()) + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+
     return log;
 }
 
