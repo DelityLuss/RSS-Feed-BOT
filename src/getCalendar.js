@@ -1,5 +1,7 @@
 const fetch = require("node-fetch");
 const fs = require('fs');
+const remove_old_event = require("./updateCalendar");
+const chalk = require('chalk');
 
 BASE_URL = "https://ade-uga-ro-vs.grenet.fr/jsp/custom/modules/plannings/anonymous_cal.jsp"
 
@@ -36,49 +38,76 @@ function getRessource(ressource) {
 async function getCalendar(ressource, firstDate, lastDate) {
 
     const date = new Date();
-    const log = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
+    const log = chalk.cyan(date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear());
 
 
     // get the ressource
     URL = getRessource(ressource);
 
     if (URL == false) {
-        console.error(`[${log}][-] Error: ressource not found`);
+        console.error(`[${chalk.red("ERROR")}][${log}][-] Error: ressource not found`);
         return null;
     }
 
     if (URL == true) {
-        console.info(`[${log}][+] Downloading calendar for all ressources`);
+        console.info(`[${chalk.green("INFO")}][${log}][+] Downloading calendar for all ressources`);
         for (var key in RESSOURCE) {
             if (key != "all") {
-                URL = getRessource(key);
-                console.info(`[${log}][+] Downloading calendar for ${key}`);
-                const response_all = await fetch(URL + "&firstDate=" + firstDate + "&lastDate=" + lastDate);
-                const data_all = await response_all.text();
+                try {
 
-                // save the calendar in a file
-                fs.writeFile("RSS/" + key + ".ics", data_all, function (err) {
-                    if (err) throw err;
-                    console.log(`[${log}][+] Calendar saved!`);
+                    URL = getRessource(key);
+                    console.info(`[${chalk.magenta("UP")}][${log}][+] Downloading calendar for ${key}`);
+                    const response_all = await fetch(URL + "&firstDate=" + firstDate + "&lastDate=" + lastDate);
+                    const data_all = await response_all.text();
+
+                    // save the calendar in a file
+                    fs.writeFile("RSS/temp" + key + ".ics", data_all, function (err) {
+                        if (err) throw err;
+                        console.log(`[${chalk.green("OK")}][${log}][+] Calendar saved!`);
+
+                        // remove old events
+                        remove_old_event("RSS/temp" + key + ".ics", "RSS/" + key + ".ics");
+                        console.log(`[${chalk.green("OK")}][${log}][+] Calendar updated!`);
+                    }
+                    );
+
+
                 }
-                );
+                catch (error) {
+                    console.error(`[${chalk.red("ERROR")}][${log}][-] Error: ${error}`);
+                    return null;
+                }
+
             }
         }
         return null;
     }
 
-    console.info("["+ log + "][+] Downloading calendar from " + firstDate + " to " + lastDate);
+    try {
+
+        console.info(`[${chalk.magenta("UP")}][${log}][+] Downloading calendar for ${key}`);
     const response = await fetch(URL + "&firstDate=" + firstDate + "&lastDate=" + lastDate);
     const data = await response.text();
 
     // save the calendar in a file
-    fs.writeFile("RSS/"+ ressource +".ics", data, function (err) {
+    fs.writeFile("RSS/temp" + ressource + ".ics", data, function (err) {
         if (err) throw err;
-        console.log(`[${log}][+] Calendar saved!`);
+        console.log(`[${chalk.green("OK")}][${log}][+] Calendar saved!`);
+
+        // remove old events
+        remove_old_event("RSS/temp" + ressource + ".ics", "RSS/" + ressource + ".ics");
+        console.log(`[${chalk.green("OK")}][${log}][+] Calendar updated!`);
     }
     );
 
     return null;
+
+    }
+    catch (error) {
+        console.error(`[${chalk.red("ERROR")}][${log}][-] Error: ${error}`);
+        return null;
+    }
+
 
 }
 

@@ -5,6 +5,8 @@ const express = require('express');
 const app = express();
 const fs = require('fs');
 const getCalendar = require("./src/getCalendar");
+const remove_old_event = require("./src/updateCalendar");
+const chalk = require('chalk');
 
 // RSS file path
 const RSS_FILE_PATH = "RSS/";
@@ -72,7 +74,7 @@ function trackClient(req, page) {
 
 function logDate() {
     const date = new Date();
-    const log = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
+    const log = chalk.cyan(date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds());
     return log;
 }
 
@@ -101,7 +103,7 @@ app.get('/refresh', async (req, res) => {
     firstDay = "2022-09-05"
     lastDay = "2023-06-16"
 
-    console.info(`[${log}][+] Refreshing calendar from ` + firstDay + " to " + lastDay);
+    console.info(`[${chalk.green("INFO")}][${log}][+] Refreshing calendar from ` + firstDay + " to " + lastDay);
 
     await getCalendar(ressource, firstDay, lastDay);
 
@@ -114,7 +116,7 @@ app.get('/rss', async (req, res) => {
     let info = TRACK_CLIENT ? trackClient(req, "refresh") : null;
     const log = logDate()
 
-    console.info(`[${log}][+] Creating RSS feed for ${req.query.ressource} || ip : ${info.ip}`);
+    console.info(`[${chalk.green("INFO")}][${log}][+] Creating RSS feed for ${req.query.ressource} | IP : ${chalk.yellow(info.ip)}`);
 
     ressource = req.query.ressource;
     ressource = ressource.toUpperCase();
@@ -126,8 +128,21 @@ app.get('/rss', async (req, res) => {
 
     res.download(`${RSS_FILE_PATH}${ressource}.ics`);
 
-    console.info(`[${log}][+] RSS feed downloaded for ${req.query.ressource}`);
+    console.info(`[${chalk.green("INFO")}][${log}][+] RSS feed downloaded for ${req.query.ressource}`);
 
+    res.status(200);
+}
+);
+
+app.get('/update', async (req, res) => {
+    TRACK_CLIENT ? trackClient(req, "update") : null;
+    const log = logDate()
+
+    console.info(`[${chalk.green("INFO")}][${log}][+] Updating calendar`);
+
+    remove_old_event();
+
+    res.send('Calendar updated!');
     res.status(200);
 }
 );
@@ -136,8 +151,10 @@ app.get('/rss', async (req, res) => {
 // Start the server
 app.listen(PORT, () => {
     const log = logDate()
-    console.info(`[${log}] Server started on port ` + PORT + '!');
+    console.log(`[${chalk.green("READY")}][${log}] Server started on port ` + PORT + '!');
 }
 );
 
-// License (ISC)
+
+
+// All rights reserved to @DelityLuss =) 
