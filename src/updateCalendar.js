@@ -20,23 +20,28 @@ function remove_old_event(new_ics, old_ics) {
     });
 
     let line_old = "";
+    let line_event = "";
     is_cancel = false;
     file_old.on('line', (l) => {
         if (l.includes("METHOD:CANCEL")) {
             line_old += "";
             is_cancel = true;
         }
-        else if (l.includes("END:VCALENDAR")) {
-            line_old += "END:VCALENDAR\n";
-        }
         else if (is_cancel) {
             line_old += l + "\n";
         }
+        else if (l.includes("END:VCALENDAR")) {
+            // pass
+        }
+        else {
+            line_event += l + "\n";
+        }
     });
 
+    console.log(line_event)
 
     file_old.on('close', () => {
-        fs.writeFile(old_ics, line_old, function (err) {
+        fs.writeFile(old_ics, line_event, function (err) {
             if (err) throw err;
 
             new_ics_file = ical.sync.parseFile(new_ics);
@@ -59,7 +64,25 @@ function remove_old_event(new_ics, old_ics) {
             console.log(`[${chalk.green("INFO")}][${logDate()}][+] ${i} events to delete`);
 
             if (i == 0) {
-                return;
+
+                const file = readline.createInterface({
+                    input: fs.createReadStream(new_ics),
+                    output: process.stdout,
+                    terminal: false
+                });
+
+                let line = "";
+                file.on('line', (l) => {
+                    line += l + "\n";
+                });
+
+                file.on('close', () => {
+                    fs.writeFile(old_ics, line + line_old, function (err) {
+                        if (err) throw err;
+                        return;
+                    });
+                });
+
             }
 
             // read by line
@@ -108,23 +131,23 @@ function remove_old_event(new_ics, old_ics) {
             // write the new file
             file.on('close', () => {
                 line += line_old;
-                fs.writeFile(new_ics, line, (err) => {
+                fs.writeFile(old_ics, line, (err) => {
                     if (err) {
                         console.log(`[${chalk.red("ERROR")}][${logDate()}][!] Error while writing file ${err}`);
                     }
                     else {
                         console.log(`[${chalk.green("INFO")}][${logDate()}][+] File written`);
 
-                        fs.rename(new_ics, old_ics, (err) => {
-                            if (err) {
-                                console.log(`[${chalk.red("ERROR")}][${logDate()}][!] Error while moving file ${err}`);
-                            }
-                            else {
-                                console.log(`[${chalk.green("INFO")}][${logDate()}][+] File moved`);
+                        // fs.rename(new_ics, old_ics, (err) => {
+                        //     if (err) {
+                        //         console.log(`[${chalk.red("ERROR")}][${logDate()}][!] Error while moving file ${err}`);
+                        //     }
+                        //     else {
+                        //         console.log(`[${chalk.green("INFO")}][${logDate()}][+] File moved`);
 
-                                return;
-                            }
-                        });
+                        //         return;
+                        //     }
+                        // });
                     }
                 }
                 );
@@ -133,9 +156,6 @@ function remove_old_event(new_ics, old_ics) {
         }
         );
     });
-
-
-
 }
 
 

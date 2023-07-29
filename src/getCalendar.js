@@ -75,30 +75,30 @@ async function getCalendar(ressource, firstDate, lastDate) {
                 }
                 catch (error) {
                     console.error(`[${chalk.red("ERROR")}][${log}][-] Error: ${error}`);
-                    return null;
+                    return;
                 }
 
             }
         }
-        return null;
+        return;
     }
 
     try {
 
-        console.info(`[${chalk.magenta(" UP ")}][${log}][+] Downloading calendar for ${key}`);
-    const response = await fetch(URL + "&firstDate=" + firstDate + "&lastDate=" + lastDate);
-    const data = await response.text();
+    console.info(`[${chalk.magenta(" UP ")}][${log}][+] Downloading calendar for ${ressource}`);
+    // const response = await fetch(URL + "&firstDate=" + firstDate + "&lastDate=" + lastDate);
+    // const data = await response.text();
 
-    // save the calendar in a file
-    fs.writeFile("RSS/temp/" + ressource + ".ics", data, function (err) {
-        if (err) throw err;
-        console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar saved!`);
+    // // save the calendar in a file
+    // fs.writeFile("RSS/temp/" + ressource + ".ics", data, function (err) {
+    //     if (err) throw err;
+    //     console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar saved!`);
 
         // remove old events
         remove_old_event("RSS/temp/" + ressource + ".ics", "RSS/" + ressource + ".ics");
         console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar updated!`);
-    }
-    );
+    // }
+    // );
 
     return null;
 
