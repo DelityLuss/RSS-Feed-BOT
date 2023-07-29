@@ -38,7 +38,7 @@ function getRessource(ressource) {
 async function getCalendar(ressource, firstDate, lastDate) {
 
     const date = new Date();
-    const log = chalk.cyan(date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear()) + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+    const log = chalk.cyan(date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds());
 
 
     // get the ressource
