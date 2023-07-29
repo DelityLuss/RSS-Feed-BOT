@@ -61,12 +61,12 @@ async function getCalendar(ressource, firstDate, lastDate) {
                     const data_all = await response_all.text();
 
                     // save the calendar in a file
-                    fs.writeFile("RSS/temp" + key + ".ics", data_all, function (err) {
+                    fs.writeFile("RSS/temp/" + key + ".ics", data_all, function (err) {
                         if (err) throw err;
                         console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar saved!`);
 
                         // remove old events
-                        remove_old_event("RSS/temp" + key + ".ics", "RSS/" + key + ".ics");
+                        remove_old_event("RSS/temp/" + key + ".ics", "RSS/" + key + ".ics");
                         console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar updated!`);
                     }
                     );
@@ -90,12 +90,12 @@ async function getCalendar(ressource, firstDate, lastDate) {
     const data = await response.text();
 
     // save the calendar in a file
-    fs.writeFile("RSS/temp" + ressource + ".ics", data, function (err) {
+    fs.writeFile("RSS/temp/" + ressource + ".ics", data, function (err) {
         if (err) throw err;
         console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar saved!`);
 
         // remove old events
-        remove_old_event("RSS/temp" + ressource + ".ics", "RSS/" + ressource + ".ics");
+        remove_old_event("RSS/temp/" + ressource + ".ics", "RSS/" + ressource + ".ics");
         console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar updated!`);
     }
     );
