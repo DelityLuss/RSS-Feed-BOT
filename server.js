@@ -128,7 +128,7 @@ app.get('/rss', async (req, res) => {
 
     res.download(`${RSS_FILE_PATH}${ressource}.ics`);
 
-    console.info(`[${chalk.magenta("UP")}][${log}][+] RSS feed downloaded for ${req.query.ressource}`);
+    console.info(`[${chalk.magenta(" UP ")}][${log}][+] RSS feed downloaded for ${req.query.ressource}`);
 
     res.status(200);
 }
