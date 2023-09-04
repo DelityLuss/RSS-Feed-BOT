@@ -29,6 +29,12 @@ RESSOURCE = {
 function trackClient(req, page) {
     // track client
     var ip = req.headers['x-real-ip'] || req.socket.remoteAddress;
+    try {
+        ip = ip.split(":")[3];
+    }
+    catch (error) {
+        console.log(error);
+    }
     var date = new Date();
     var time = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
     var day = date.getDate() + "/" + date.getMonth() + "/" + date.getFullYear();
@@ -100,8 +106,8 @@ app.get('/refresh', async (req, res) => {
         return res.send("Error: ressource not found");
     }
 
-    firstDay = "2022-09-05"
-    lastDay = "2023-06-16"
+    firstDay = "2023-09-04"
+    lastDay = "2024-06-30"
 
     console.info(`[${chalk.green("INFO")}][${log}][+] Refreshing calendar from ` + firstDay + " to " + lastDay);
 

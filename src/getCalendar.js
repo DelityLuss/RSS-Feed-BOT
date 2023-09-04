@@ -1,9 +1,11 @@
 const fetch = require("node-fetch");
 const fs = require('fs');
-const remove_old_event = require("./updateCalendar");
+const processICS = require("./updateCalendar");
 const chalk = require('chalk');
 
 BASE_URL = "https://ade-uga-ro-vs.grenet.fr/jsp/custom/modules/plannings/anonymous_cal.jsp"
+
+
 
 RESSOURCE = {
     "B1G1": 49465,
@@ -13,7 +15,6 @@ RESSOURCE = {
     "B2G1": 49470,
     "B2G2": 49515,
     "B2GA": 49262,
-    "all": "all"
 }
 
 
@@ -24,11 +25,10 @@ function getRessource(ressource) {
         if (ressource == "all") {
             return true;
         }
-        URL = BASE_URL + "?resources=" + ressource + "&projectId=5&calType=ical"
+        URL = BASE_URL + "?resources=" + ressource + "&projectId=1&calType=ical"
 
         return URL;
-    }
-    else {
+    } else {
         return false;
     }
 }
@@ -57,23 +57,29 @@ async function getCalendar(ressource, firstDate, lastDate) {
 
                     URL = getRessource(key);
                     console.info(`[${chalk.magenta(" UP ")}][${log}][+] Downloading calendar for ${key}`);
-                    const response_all = await fetch(URL + "&firstDate=" + firstDate + "&lastDate=" + lastDate);
-                    const data_all = await response_all.text();
+                    await fetch(URL + "&firstDate=" + firstDate + "&lastDate=" + lastDate)
+                        .then(res => res.text()
+                            .then(data => {
+                                fs.writeFile("RSS/temp/" + key + ".ics", data, function (err) {
+                                    if (err) throw err;
+                                    console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar saved!`);
 
-                    // save the calendar in a file
-                    fs.writeFile("RSS/temp/" + key + ".ics", data_all, function (err) {
-                        if (err) throw err;
-                        console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar saved!`);
-
-                        // remove old events
-                        remove_old_event("RSS/temp/" + key + ".ics", "RSS/" + key + ".ics");
-                        console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar updated!`);
-                    }
-                    );
+                                    // remove old events
+                                    if (key != "all") {
+                                        processICS("RSS/temp/" + key + ".ics", "RSS/" + key + ".ics", key);
+                                        console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar updated!`);
+                                    }
+                                });
 
 
-                }
-                catch (error) {
+                            }))
+                        .catch(err => {
+                            console.error(`[${chalk.red("ERROR")}][${log}][-] Error: ${err}`);
+                            return;
+                        });
+
+
+                } catch (error) {
                     console.error(`[${chalk.red("ERROR")}][${log}][-] Error: ${error}`);
                     return;
                 }
@@ -85,25 +91,23 @@ async function getCalendar(ressource, firstDate, lastDate) {
 
     try {
 
-    console.info(`[${chalk.magenta(" UP ")}][${log}][+] Downloading calendar for ${ressource}`);
-    // const response = await fetch(URL + "&firstDate=" + firstDate + "&lastDate=" + lastDate);
-    // const data = await response.text();
+        console.info(`[${chalk.magenta(" UP ")}][${log}][+] Downloading calendar for ${ressource}`);
+        const response = await fetch(URL + "&firstDate=" + firstDate + "&lastDate=" + lastDate);
+        const data = await response.text();
 
-    // // save the calendar in a file
-    // fs.writeFile("RSS/temp/" + ressource + ".ics", data, function (err) {
-    //     if (err) throw err;
-    //     console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar saved!`);
+        // save the calendar in a file
+        fs.writeFile("RSS/temp/" + ressource + ".ics", data, function (err) {
+            if (err) throw err;
+            console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar saved!`);
 
-        // remove old events
-        remove_old_event("RSS/temp/" + ressource + ".ics", "RSS/" + ressource + ".ics");
-        console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar updated!`);
-    // }
-    // );
 
-    return null;
+            processICS("RSS/temp/" + ressource + ".ics", "RSS/" + ressource + ".ics", ressource);
+            console.log(`[${chalk.green(" OK ")}][${log}][+] Calendar updated!`);
+        });
 
-    }
-    catch (error) {
+        return null;
+
+    } catch (error) {
         console.error(`[${chalk.red("ERROR")}][${log}][-] Error: ${error}`);
         return null;
     }
